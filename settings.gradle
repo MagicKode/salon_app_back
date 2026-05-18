@@ -1,1 +1,15 @@
+pluginManagement {
+    repositories {
+        maven { url = 'https://repo.spring.io/snapshot' }
+        gradlePluginPortal()
+        maven {
+            url = uri("https://packages.confluent.io/maven/")
+        }
+    }
+}
 rootProject.name = 'salon-app-back'
+include 'base-domains'
+include 'auth-service'
+include 'booking-service'
+include 'catalog-service'
+include 'common-service'
