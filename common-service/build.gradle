@@ -7,3 +7,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 }
+
+// Отключаем сборку запускаемого сервера для утилит 👇
+bootJar {
+    enabled = false
+}
+jar {
+    enabled = true
+}

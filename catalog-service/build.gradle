@@ -8,6 +8,19 @@ dependencies {
     implementation project(':common-service') // Подключение общих утилит
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.postgresql:postgresql:42.7.10'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+
+bootJar {
+    enabled = true
+}
+jar {
+    enabled = false
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
 }
