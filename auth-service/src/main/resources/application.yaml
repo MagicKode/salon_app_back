@@ -1,0 +1,27 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/salon_db # Используем ту же СУБД, но Hibernate создаст новые таблицы
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Кастомные настройки для нашей безопасности
+jwt:
+  secret: 9a4f94d8170b1343feaa84181286e1112233445566778899aabbccddeeff0011 # Сильная секретная строка в hex
+  expiration: 86400000 # Время жизни токена — 24 часа (в миллисекундах)
