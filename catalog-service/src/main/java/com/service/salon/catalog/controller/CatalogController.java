@@ -1,6 +1,8 @@
 package com.service.salon.catalog.controller;
 
 import com.service.salon.basedomains.model.Salon;
+import com.service.salon.catalog.mapper.SalonMapper;
+import com.service.salon.catalog.model.dto.SalonDto;
 import com.service.salon.catalog.service.CatalogService;
 import com.service.salon.commonservice.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class CatalogController {
 
     private final CatalogService catalogService;
+    private final SalonMapper salonMapper;
 
     @GetMapping("/salon")
-    public ResponseEntity<ApiResponse<Salon>> getSalonInfo() {
-        Salon salon = catalogService.getMainSalon();
-        return new ResponseEntity<>(ApiResponse.success(salon), HttpStatus.OK);
+    public ResponseEntity<ApiResponse<SalonDto>> getSalonInfo() {
+        Salon salonDomain = catalogService.getMainSalon();
+        SalonDto salonDto = salonMapper.toDto(salonDomain);
+
+        return new ResponseEntity<>(ApiResponse.success(salonDto), HttpStatus.OK);
     }
 }

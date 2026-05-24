@@ -1,6 +1,7 @@
-package com.service.salon.commonservice.exception;
+package com.service.salon.commonservice.handler;
 
 import com.service.salon.commonservice.dto.ApiResponse;
+import com.service.salon.commonservice.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
