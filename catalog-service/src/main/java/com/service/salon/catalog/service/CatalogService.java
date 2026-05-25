@@ -4,4 +4,5 @@ import com.service.salon.basedomains.model.Salon;
 
 public interface CatalogService {
     Salon getMainSalon();
+    Salon updateMainSalon(Salon salonDomain);
 }

@@ -36,4 +36,28 @@ public class CatalogServiceImpl implements CatalogService {
 
         return salonMapper.toDomain(entity);
     }
+
+    @Override
+    public Salon updateMainSalon(Salon salonDomain) {
+        log.info("Обновление данных главного салона в базе данных для ID: 1");
+
+        // 1. Извлекаем текущую сущность из БД. Если её нет — кидаем твою кастомную ошибку
+        com.service.salon.catalog.model.SalonEntity entity = salonRepository.findById(1L)
+                .orElseThrow(() -> new com.service.salon.commonservice.exception.ResourceNotFoundException("Main salon not found with id: 1"));
+
+        // 2. Обновляем поля сущности (кроме ID и рейтинга, так как рейтинг считается по отзывам)
+        entity.setName(salonDomain.getName());
+        entity.setAddress(salonDomain.getAddress());
+        entity.setDescription(salonDomain.getDescription());
+        entity.setLatitude(salonDomain.getLatitude());
+        entity.setLongitude(salonDomain.getLongitude());
+        entity.setPhoneNumber(String.valueOf(salonDomain.getPhoneNumber()));
+        entity.setWorkingHours(salonDomain.getWorkingHours());
+
+        // 3. Сохраняем сущность обратно в PostgreSQL
+        SalonEntity updateEntity = salonRepository.save(entity);
+
+        // 4. Маппим обновленную сущность обратно в чистый бизнес-домен
+        return salonMapper.toDomain(updateEntity);
+    }
 }
