@@ -30,20 +30,29 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse register(RegisterRequest request) {
         log.info("Регистрация нового пользователя по номеру телефона: {}", request.getPhoneNumber());
 
-        if (userRepository.existsByUsername(request.getPhoneNumber())) {
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new BusinessException("Пользователь с таким номером телефона уже зарегистрирован", HttpStatus.BAD_REQUEST);
         }
 
         UserEntity user = UserEntity.builder()
-                .username(request.getPhoneNumber())
+                .phoneNumber(request.getPhoneNumber())
                 .password(passwordEncoder.encode(request.getPassword())) // Хэшируем
                 .role(Role.CLIENT) // По умолчанию регистрируем как клиента
+                .firstName(request.getFirstName())
+                .email(request.getEmail())
                 .build();
 
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        return new AuthResponse(token, "Bearer", user.getRole().name());
+        String token = jwtUtil.generateToken(user.getPhoneNumber(), user.getRole().name());
+        return new AuthResponse(
+                token,
+                "Bearer",
+                user.getRole().name(),
+                user.getFirstName(),
+                user.getPhoneNumber(),
+                user.getEmail()
+        );
     }
 
     @Override
@@ -51,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
         log.info("Попытка входа пользователя по номеру телефона: {}", request.getPhoneNumber());
 
-        UserEntity user = userRepository.findByUsername(request.getPhoneNumber())
+        UserEntity user = userRepository.findByPhoneNumber(request.getPhoneNumber())
                 .orElseThrow(() -> new BusinessException("Неверный номер телефона или пароль", HttpStatus.UNAUTHORIZED));
 
         // Проверяем хэши паролей
@@ -59,7 +68,14 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Неверный номер телефона или пароль", HttpStatus.UNAUTHORIZED);
         }
 
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        return new AuthResponse(token, "Bearer", user.getRole().name());
+        String token = jwtUtil.generateToken(user.getPhoneNumber(), user.getRole().name());
+        return new AuthResponse(
+                token,
+                "Bearer",
+                user.getRole().name(),
+                user.getFirstName(),
+                user.getPhoneNumber(),
+                user.getEmail() != null ? user.getEmail() : "Email не указан"
+        );
     }
 }

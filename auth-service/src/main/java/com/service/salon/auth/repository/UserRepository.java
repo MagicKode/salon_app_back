@@ -9,10 +9,10 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    // Spring Data JPA автоматически сгенерирует SQL-запрос выборки по username
-    Optional<UserEntity> findByUsername(String username);
+    // Spring Data JPA автоматически сгенерирует SQL-запрос выборки по phoneNumber
+    Optional<UserEntity> findByPhoneNumber(String phoneNumber);
 
     // Проверка существования при регистрации
-    boolean existsByUsername(String username);
+    boolean existsByPhoneNumber(String phoneNumber);
 
 }

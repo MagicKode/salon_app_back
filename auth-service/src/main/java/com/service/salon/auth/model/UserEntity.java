@@ -17,7 +17,7 @@ public class UserEntity {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String username;
+    private String phoneNumber;
 
     @Column(nullable = false)
     private String password;
@@ -26,4 +26,9 @@ public class UserEntity {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "email")
+    private String email;
 }

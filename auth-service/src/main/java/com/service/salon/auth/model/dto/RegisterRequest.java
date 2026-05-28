@@ -13,4 +13,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "Пожалуйста, введите пароль")
     private String password;
+
+    private String firstName;
+    private String email;
 }
