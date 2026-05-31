@@ -66,8 +66,15 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 return onError(exchange, HttpStatus.UNAUTHORIZED);
             }
 
-            // Токен в порядке! Пропускаем запрос к целевому микросервису
-            return chain.filter(exchange);
+            // 4. Извлекаем username из токена
+            String username = jwtValidator.getUsername(token); // Убедись, что этот метод есть в твой JwtValidator
+
+            // 5. Мутируем запрос, добавляя заголовок для внутренних микросервисов
+            ServerHttpRequest modifiedRequest = request.mutate()
+                    .header("X-User-Name", username)
+                    .build();
+
+            return chain.filter(exchange.mutate().request(modifiedRequest).build());
         };
     }
 

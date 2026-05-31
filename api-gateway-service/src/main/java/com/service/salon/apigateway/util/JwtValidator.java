@@ -34,4 +34,18 @@ public class JwtValidator {
             return true;
         }
     }
+
+    public String getUsername(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.getSubject(); // Достаем реальное имя пользователя из payload JWT
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
