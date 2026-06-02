@@ -1,7 +1,6 @@
 package com.service.salon.booking.controller;
 
 import com.service.salon.booking.model.Booking;
-import com.service.salon.booking.model.BookingStatus;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 import com.service.salon.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<?> createBooking(
             @RequestBody Booking booking,
-            @RequestHeader("X-User-Name") String username
+            @RequestHeader(value = "X-User-Name", required = false, defaultValue = "Anonym") String username
     ) {
         try {
             Booking savedBooking = bookingService.createBooking(booking, username);
@@ -44,26 +43,15 @@ public class BookingController {
     @GetMapping("/slots")
     public ResponseEntity<List<TimeSlotDto>> getAvailableSlots(
             @RequestParam String masterName,
-            @RequestParam String date) { // Передаем дату строкой "2026-05-31"
+            @RequestParam String date) {
+        return ResponseEntity.ok(bookingService.getAvailableSlots(masterName, LocalDate.parse(date)));
+    }
 
-        LocalDate localDate = LocalDate.parse(date);
-
-        // Массив всех стандартных рабочих слотов (как на твоем макете)
-        List<String> workSlots = List.of(
-                "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "19:00"
-        );
-
-        // Получаем из базы то, что уже забронировано
-        List<Booking> activeBookings = bookingService.getBookingsByMasterAndDate(masterName, localDate);
-
-        // Сопоставляем и размечаем слоты
-        List<TimeSlotDto> slots = workSlots.stream().map(slotTime -> {
-            boolean isBusy = activeBookings.stream()
-                    .anyMatch(b -> b.getBookingTime().toString().startsWith(slotTime)
-                            && b.getStatus() != BookingStatus.CANCELED);
-            return new TimeSlotDto(slotTime, !isBusy);
-        }).toList();
-
-        return ResponseEntity.ok(slots);
+    @GetMapping("/busy-dates")
+    public ResponseEntity<List<LocalDate>> getFullyBusyDates(
+            @RequestParam String masterName,
+            @RequestParam int month,
+            @RequestParam int year) {
+        return ResponseEntity.ok(bookingService.getFullyBusyDates(masterName, month, year));
     }
 }

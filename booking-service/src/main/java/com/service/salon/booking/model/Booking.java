@@ -19,16 +19,16 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "client_name", nullable = false)
     private String clientName; // В будущем привяжем к User ID
 
-    @Column(nullable = false)
+    @Column(name = "master_name", nullable = false)
     private String masterName; // На основе макета "Pavel"
 
-    @Column(nullable = false)
+    @Column(name = "booking_date", nullable = false)
     private LocalDate bookingDate; // Например, 2026-05-31
 
-    @Column(nullable = false)
+    @Column(name = "booking_time", nullable = false)
     private LocalTime bookingTime; // Например, 13:00:00
 
     @ElementCollection
@@ -36,12 +36,14 @@ public class Booking {
     @Column(name = "service_name")
     private List<String> serviceNames;
 
+    @Column(name = "total_price")
     private BigDecimal totalPrice;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private BookingStatus status = BookingStatus.PENDING;
 
 }
