@@ -1,10 +1,10 @@
-package com.service.salon.basedomains;
+package com.service.salon.historyservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 //@SpringBootTest
-class BaseDomainsApplicationTests {
+class HistoryServiceApplicationTests {
 
     @Test
     void contextLoads() {

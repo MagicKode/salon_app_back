@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,31 +23,44 @@ public class BookingServiceImpl implements BookingService {
             "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
     );
 
+    private int calculateDurationHours(List<String> services) {
+        if (services == null || services.isEmpty()) {
+            return 1;
+        }
+        return services.size();
+    }
+
     @Transactional
     @Override
     public Booking createBooking(Booking booking, String username) {
         booking.setClientName(username);
+        booking.setStatus(BookingStatus.CONFIRMED);
 
+        // 1. Вычисляем, сколько часов (слотов) займет сеанс по количеству услуг
+        int durationHours = calculateDurationHours(booking.getServiceNames());
+        LocalTime startTime = booking.getBookingTime();
+        LocalTime endTime = startTime.plusHours(durationHours);
+
+        // 2. Ищем все брони мастера на эту дату
         List<Booking> existingBookings = bookingRepository.findByMasterNameAndBookingDate(
                 booking.getMasterName(),
                 booking.getBookingDate()
         );
 
+        // 3. Проверяем пересечение временных интервалов
         boolean isIntervalOverlapped = existingBookings.stream()
                 .filter(b -> b.getStatus() != BookingStatus.CANCELED)
                 .anyMatch(b -> {
                     LocalTime existStart = b.getBookingTime();
-                    LocalTime existEnd = existStart.plusHours(1);
+                    int existDuration = calculateDurationHours(b.getServiceNames());
+                    LocalTime existEnd = existStart.plusHours(existDuration);
 
-                    LocalTime newStart = booking.getBookingTime();
-                    // Предполагаем дефолтную длительность в 1 час, либо динамически вычисляем (newStart.plusHours(requiredSlots))
-                    LocalTime newEnd = newStart.plusHours(1);
-
-                    return newStart.isBefore(existEnd) && newEnd.isAfter(existStart);
+                    // Пересекаются ли интервалы [newStart, newEnd) и [existStart, existEnd)
+                    return startTime.isBefore(existEnd) && endTime.isAfter(existStart);
                 });
 
         if (isIntervalOverlapped) {
-            throw new IllegalStateException("Извините, это время уже занято другим клиентом!");
+            throw new IllegalStateException("Извините, время уже занято!");
         }
 
         return bookingRepository.save(booking);
@@ -64,20 +78,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date) {
-        System.out.println("=== [GET SLOTS] Запрос для мастера: " + masterName + ", Дата: " + date);
+        // 1. Получаем активные брони мастера
+        List<Booking> activeBookings = bookingRepository.findByMasterNameAndBookingDate(masterName.trim(), date);
 
-        // 2. Ищем в БД записи строго для этого мастера и этой даты
-        List<Booking> activeBookings = bookingRepository.findByMasterNameAndBookingDate(masterName.trim(), date).stream()
-                .filter(b -> b.getStatus() != BookingStatus.CANCELED)
-                .toList();
-        ;
-
-        System.out.println("Найдено активных записей в БД на русском: " + activeBookings.size());
-
-        // Логирование для контроля
-        System.out.println("=== [GET SLOTS] Мастер: " + masterName + ", Дата: " + date + " ===");
-        System.out.println("Найдено активных записей в БД: " + activeBookings.size());
-
+        // 2. Идем по каждому 30-минутному слоту
         return WORK_SLOTS.stream().map(slotStr -> {
             LocalTime targetTime = LocalTime.parse(slotStr);
 
@@ -85,16 +89,10 @@ public class BookingServiceImpl implements BookingService {
                 LocalTime bookingStart = booking.getBookingTime();
                 if (bookingStart == null) return false;
 
-                // Вычисляем, сколько слотов (часов) занимает это бронирование.
-                // FIX: Считаем количество услуг. Если услуг больше, берем их количество за часы.
-                // Если у тебя есть явное поле длительности, используй его: int durationHours = booking.getDurationHours();
-                int durationHours = (booking.getServiceNames() != null && !booking.getServiceNames().isEmpty())
-                        ? booking.getServiceNames().size()
-                        : 1;
-
+                int durationHours = calculateDurationHours(booking.getServiceNames());
                 LocalTime bookingEnd = bookingStart.plusHours(durationHours);
 
-                // Текущий слот занят, если он находится в интервале [bookingStart, bookingEnd)
+                // Слот закрывается, если targetTime находится в полуинтервале [bookingStart, bookingEnd)
                 return (!targetTime.isBefore(bookingStart)) && targetTime.isBefore(bookingEnd);
             });
 

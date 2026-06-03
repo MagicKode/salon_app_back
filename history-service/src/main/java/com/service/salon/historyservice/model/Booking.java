@@ -1,4 +1,4 @@
-package com.service.salon.booking.model;
+package com.service.salon.historyservice.model;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;

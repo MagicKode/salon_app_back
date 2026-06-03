@@ -21,7 +21,7 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<?> createBooking(
             @RequestBody Booking booking,
-            @RequestHeader(value = "X-User-Name", required = false, defaultValue = "Anonym") String username
+            @RequestHeader(value = "X-User-Name") String username
     ) {
         try {
             Booking savedBooking = bookingService.createBooking(booking, username);
@@ -35,7 +35,9 @@ public class BookingController {
 
     // Получить историю записей клиента (для третьей вкладки, image_8ad29d.png)
     @GetMapping("/history")
-    public ResponseEntity<List<Booking>> getHistory(@RequestHeader("X-User-Name") String username) {
+    public ResponseEntity<List<Booking>> getHistory(
+            @RequestHeader(value = "X-User-Name") String username
+    ) {
         List<Booking> history = bookingService.getClientHistory(username);
         return ResponseEntity.ok(history);
     }

@@ -1,5 +1,6 @@
 server:
   port: 8083
+  address: 0.0.0.0
 
 spring:
   application:
@@ -18,3 +19,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: 9a4f94d8170b1343feaa84181286e1112233445566778899aabbccddeeff0011
+  expiration: 86400000
