@@ -1,6 +1,7 @@
 package com.service.salon.booking.repository;
 
 import com.service.salon.booking.model.Booking;
+import com.service.salon.booking.model.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,7 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Поиск всех записей к конкретному мастеру на выбранный день
-    List<Booking> findByMasterNameAndBookingDate(String masterName, LocalDate date);
+    List<Booking> findByMasterNameAndBookingDateAndStatus(String masterName, LocalDate date, BookingStatus status);
 
     // Поиск истории записей для конкретного клиента
     List<Booking> findByClientNameOrderByBookingDateDescBookingTimeDesc(String clientName);

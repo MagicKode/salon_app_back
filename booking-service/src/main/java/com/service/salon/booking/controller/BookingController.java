@@ -1,9 +1,11 @@
 package com.service.salon.booking.controller;
 
 import com.service.salon.booking.model.Booking;
+import com.service.salon.booking.model.BookingStatus;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 import com.service.salon.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,8 +47,11 @@ public class BookingController {
     @GetMapping("/slots")
     public ResponseEntity<List<TimeSlotDto>> getAvailableSlots(
             @RequestParam String masterName,
-            @RequestParam String date) {
-        return ResponseEntity.ok(bookingService.getAvailableSlots(masterName, LocalDate.parse(date)));
+            @RequestParam String date,
+            @RequestParam String status
+            ) {
+        BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
+        return ResponseEntity.ok(bookingService.getAvailableSlots(masterName, LocalDate.parse(date), bookingStatus));
     }
 
     @GetMapping("/busy-dates")

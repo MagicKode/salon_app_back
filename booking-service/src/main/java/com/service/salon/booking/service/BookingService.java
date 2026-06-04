@@ -1,6 +1,7 @@
 package com.service.salon.booking.service;
 
 import com.service.salon.booking.model.Booking;
+import com.service.salon.booking.model.BookingStatus;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 
 import java.time.LocalDate;
@@ -11,7 +12,7 @@ public interface BookingService {
     void cancelBooking(Long bookingId, String username);
 
     List<Booking> getClientHistory(String clientName);
-    List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate);
-    List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date);
+    List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate, BookingStatus status);
+    List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date,  BookingStatus status);
     List<LocalDate> getFullyBusyDates(String masterName, int month, int year);
 }

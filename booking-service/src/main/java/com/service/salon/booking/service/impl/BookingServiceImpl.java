@@ -50,9 +50,10 @@ public class BookingServiceImpl implements BookingService {
         LocalTime endTime = startTime.plusHours(durationHours);
 
         // 2. Ищем все брони мастера на эту дату
-        List<Booking> existingBookings = bookingRepository.findByMasterNameAndBookingDate(
+        List<Booking> existingBookings = bookingRepository.findByMasterNameAndBookingDateAndStatus(
                 booking.getMasterName(),
-                booking.getBookingDate()
+                booking.getBookingDate(),
+                booking.getStatus()
         );
 
         // 3. Проверяем пересечение временных интервалов
@@ -80,14 +81,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate) {
-        return bookingRepository.findByMasterNameAndBookingDate(masterName, localDate);
+    public List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate, BookingStatus status) {
+        return bookingRepository.findByMasterNameAndBookingDateAndStatus(masterName, localDate, status);
     }
 
     @Override
-    public List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date) {
+    public List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date, BookingStatus status) {
         // 1. Получаем активные брони мастера
-        List<Booking> activeBookings = bookingRepository.findByMasterNameAndBookingDate(masterName.trim(), date);
+        List<Booking> activeBookings = bookingRepository.findByMasterNameAndBookingDateAndStatus(masterName.trim(), date, status);
 
         // 2. Идем по каждому 30-минутному слоту
         return WORK_SLOTS.stream().map(slotStr -> {
@@ -97,7 +98,6 @@ public class BookingServiceImpl implements BookingService {
                 LocalTime bookingStart = booking.getBookingTime();
                 if (bookingStart == null) return false;
 
-//                int durationHours = calculateDurationHours(booking.getServiceNames());
                 int durationHours = getDurationInHours(booking);
                 LocalTime bookingEnd = bookingStart.plusHours(durationHours);
 
@@ -115,6 +115,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public void cancelBooking(Long bookingId, String username) {
         // 1. Ищем бронь в базе
         Booking booking = bookingRepository.findById(bookingId)
