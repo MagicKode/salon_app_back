@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +27,15 @@ public class BookingServiceImpl implements BookingService {
             return 1;
         }
         return services.size();
+    }
+
+    private int getDurationInHours(Booking booking) {
+        // Если пришло 0 или null, считаем как 1 час
+        if (booking.getDurationMinutes() == null || booking.getDurationMinutes() <= 0) {
+            return 1;
+        }
+        // Округляем вверх (например, 90 мин = 2 часа, 120 мин = 2 часа)
+        return (int) Math.ceil(booking.getDurationMinutes() / 60.0);
     }
 
     @Transactional
@@ -52,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
                 .filter(b -> b.getStatus() != BookingStatus.CANCELED)
                 .anyMatch(b -> {
                     LocalTime existStart = b.getBookingTime();
-                    int existDuration = calculateDurationHours(b.getServiceNames());
+                    int existDuration = getDurationInHours(b);
                     LocalTime existEnd = existStart.plusHours(existDuration);
 
                     // Пересекаются ли интервалы [newStart, newEnd) и [existStart, existEnd)
@@ -89,7 +97,8 @@ public class BookingServiceImpl implements BookingService {
                 LocalTime bookingStart = booking.getBookingTime();
                 if (bookingStart == null) return false;
 
-                int durationHours = calculateDurationHours(booking.getServiceNames());
+//                int durationHours = calculateDurationHours(booking.getServiceNames());
+                int durationHours = getDurationInHours(booking);
                 LocalTime bookingEnd = bookingStart.plusHours(durationHours);
 
                 // Слот закрывается, если targetTime находится в полуинтервале [bookingStart, bookingEnd)
@@ -103,5 +112,21 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<LocalDate> getFullyBusyDates(String masterName, int month, int year) {
         return List.of();
+    }
+
+    @Override
+    public void cancelBooking(Long bookingId, String username) {
+        // 1. Ищем бронь в базе
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Бронирование не найдено"));
+
+        // 2. Безопасность: проверяем, что эту бронь отменяет именно тот клиент, который её создал
+        if (!booking.getClientName().equalsIgnoreCase(username)) {
+            throw new IllegalArgumentException("Вы не можете отменить чужое бронирование!");
+        }
+
+        // 3. Меняем статус на отменённый
+        booking.setStatus(BookingStatus.CANCELED);
+        bookingRepository.save(booking);
     }
 }
