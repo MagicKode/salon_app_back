@@ -10,6 +10,7 @@ import java.util.List;
 public interface BookingService {
     Booking createBooking(Booking booking, String username);
     void cancelBooking(Long bookingId, String username);
+    void updateBookingComment(Long bookingId, String newComment, String username);
 
     List<Booking> getClientHistory(String clientName);
     List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate, BookingStatus status);

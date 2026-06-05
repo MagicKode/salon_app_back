@@ -46,6 +46,8 @@ public class BookingServiceImpl implements BookingService {
 
         // 1. Вычисляем, сколько часов (слотов) займет сеанс по количеству услуг
         int durationHours = calculateDurationHours(booking.getServiceNames());
+        booking.setDurationMinutes(durationHours * 60);
+ 
         LocalTime startTime = booking.getBookingTime();
         LocalTime endTime = startTime.plusHours(durationHours);
 
@@ -128,6 +130,23 @@ public class BookingServiceImpl implements BookingService {
 
         // 3. Меняем статус на отменённый
         booking.setStatus(BookingStatus.CANCELED);
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    @Transactional
+    public void updateBookingComment(Long bookingId, String newComment, String username) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Бронирование не найдено"));
+
+        // 2. Безопасность: проверят только автор брони
+        if (!booking.getClientName().equalsIgnoreCase(username)) {
+            throw new IllegalStateException("Вы не можете изменять комментарий к чужому бронированию!");
+        }
+
+        // 3. Обновляем комментарий и сохраняем
+        booking.setNotes(newComment); // Предполагаем, что у сущности Booking есть поле comment
         bookingRepository.save(booking);
     }
 }

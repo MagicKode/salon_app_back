@@ -15,6 +15,7 @@
         <module name="salon-app-back.booking-service.main" />
         <module name="salon-app-back.common-service.main" />
         <module name="salon-app-back.base-domains.main" />
+        <module name="salon-app-back.review-service.main" />
         <module name="salon-app-back.catalog-service.main" />
       </profile>
       <profile name="Gradle Imported" enabled="true">
@@ -29,6 +30,7 @@
         <module name="salon-app-back.common-service.test" />
         <module name="salon-app-back.history-service.test" />
         <module name="salon-app-back.booking-service.test" />
+        <module name="salon-app-back.review-service.test" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="17" />
