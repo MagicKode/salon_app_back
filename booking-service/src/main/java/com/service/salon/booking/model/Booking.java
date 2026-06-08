@@ -1,5 +1,6 @@
 package com.service.salon.booking.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -61,4 +62,28 @@ public class Booking {
 
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
+
+    // Идеально состыкует Java-поле serviceNames с Flutter-полем servicesNames
+    @JsonProperty("servicesNames")
+    public List<String> getServicesNamesForFlutter() {
+        return this.serviceNames;
+    }
+
+    // Собирает дату и время в один ISO-текст для Flutter: "2026-06-07T14:30:00"
+    @JsonProperty("startTime")
+    public String getStartTimeIso() {
+        if (this.bookingDate != null && this.bookingTime != null) {
+            return this.bookingDate.atTime(this.bookingTime).toString();
+        }
+        return null;
+    }
+
+    // Рассчитывает время окончания на основе длительности и отдаёт ISO-строку
+    @JsonProperty("endTime")
+    public String getEndTimeIso() {
+        if (this.bookingDate != null && this.bookingTime != null && this.durationMinutes != null) {
+            return this.bookingDate.atTime(this.bookingTime).plusMinutes(this.durationMinutes).toString();
+        }
+        return null;
+    }
 }
