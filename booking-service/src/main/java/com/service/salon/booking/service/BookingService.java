@@ -2,13 +2,14 @@ package com.service.salon.booking.service;
 
 import com.service.salon.booking.model.Booking;
 import com.service.salon.booking.model.BookingStatus;
+import com.service.salon.booking.model.dto.BookingRequestDto;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingService {
-    Booking createBooking(Booking booking, String username);
+    Booking createBooking(BookingRequestDto bookingRequestDto, String username);
     void cancelBooking(Long bookingId, String username);
     void updateBookingComment(Long bookingId, String newComment, String username);
 

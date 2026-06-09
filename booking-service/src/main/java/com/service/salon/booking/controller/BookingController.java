@@ -2,6 +2,7 @@ package com.service.salon.booking.controller;
 
 import com.service.salon.booking.model.Booking;
 import com.service.salon.booking.model.BookingStatus;
+import com.service.salon.booking.model.dto.BookingRequestDto;
 import com.service.salon.booking.model.dto.CommentRequestDto;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 import com.service.salon.booking.service.BookingService;
@@ -23,11 +24,11 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<?> createBooking(
-            @RequestBody Booking booking,
+            @RequestBody BookingRequestDto bookingRequestDto,
             @RequestHeader(value = "X-User-Name") String username
     ) {
         try {
-            Booking savedBooking = bookingService.createBooking(booking, username);
+            Booking savedBooking = bookingService.createBooking(bookingRequestDto, username);
             return new ResponseEntity<>(savedBooking, HttpStatus.CREATED);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
