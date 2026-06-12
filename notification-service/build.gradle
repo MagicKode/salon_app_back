@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-
+    implementation 'com.google.firebase:firebase-admin:9.9.0'
 }

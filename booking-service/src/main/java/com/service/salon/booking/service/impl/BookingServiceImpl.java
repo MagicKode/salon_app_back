@@ -3,12 +3,19 @@ package com.service.salon.booking.service.impl;
 import com.service.salon.booking.model.Booking;
 import com.service.salon.booking.model.BookingStatus;
 import com.service.salon.booking.model.dto.BookingRequestDto;
+import com.service.salon.booking.model.dto.NotificationRequestDto;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 import com.service.salon.booking.repository.BookingRepository;
 import com.service.salon.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,6 +25,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
+    private final RestTemplate restTemplate;
+
+    private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
+    private static final String NOTIFICATION_URL = "http://localhost:8085/api/v1/notifications/send";
 
     private final List<String> WORK_SLOTS = List.of(
             "09:00", "10:00", "11:00", "12:00", "13:00", "14:00",
@@ -70,6 +81,17 @@ public class BookingServiceImpl implements BookingService {
         booking.setDurationMinutes(bookingRequestDto.getDurationMinutes());
         booking.setStatus(BookingStatus.CONFIRMED);
 
+        sendNotification(username,
+                "Запись создана",
+                "Ваша запись на " + bookingRequestDto.getBookingDate() + " в " + bookingRequestDto.getBookingTime() + " успешно создана.",
+                "BOOKING_CREATED");
+
+        // Уведомление мастеру
+        sendNotification("+375291234567",
+                "Новая запись",
+                "Клиент " + username + " записался на " + bookingRequestDto.getBookingDate() + " в " + bookingRequestDto.getBookingTime(),
+                "BOOKING_CREATED");
+
         return bookingRepository.save(booking);
     }
 
@@ -121,14 +143,40 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Бронирование не найдено"));
 
+        // ✅ Разрешаем отмену клиенту ИЛИ мастеру
+        boolean isClient = booking.getClientName().equalsIgnoreCase(username);
+        boolean isMaster = booking.getMasterName().equalsIgnoreCase(username);
+
         // 2. Безопасность: проверяем, что эту бронь отменяет именно тот клиент, который её создал
-        if (!booking.getClientName().equalsIgnoreCase(username)) {
+        if (!isClient && !isMaster) {
             throw new IllegalArgumentException("Вы не можете отменить чужое бронирование!");
         }
 
         // 3. Меняем статус на отменённый
         booking.setStatus(BookingStatus.CANCELED);
         bookingRepository.save(booking);
+
+        // Уведомление клиенту
+        sendNotification(booking.getClientName(),
+                "Запись отменена",
+                "Ваша запись #" + bookingId + " была отменена.",
+                "BOOKING_CANCELLED");
+
+        // Уведомление мастеру (если отменил клиент)
+        if (isClient) {
+            sendNotification(booking.getMasterName(),
+                    "Запись отменена клиентом",
+                    "Клиент " + username + " отменил запись #" + bookingId,
+                    "BOOKING_CANCELLED");
+        }
+
+        // Уведомление клиенту (если отменил мастер)
+        if (isMaster) {
+            sendNotification(booking.getClientName(),
+                    "Запись отменена мастером",
+                    "Мастер отменил вашу запись #" + bookingId,
+                    "BOOKING_CANCELLED");
+        }
     }
 
     @Override
@@ -146,6 +194,12 @@ public class BookingServiceImpl implements BookingService {
         // 3. Обновляем комментарий и сохраняем
         booking.setNotes(newComment); // Предполагаем, что у сущности Booking есть поле comment
         bookingRepository.save(booking);
+
+        // ✅ Уведомление об изменении
+        sendNotification(username,
+                "Запись изменена",
+                "Комментарий к записи #" + bookingId + " был обновлен.",
+                "BOOKING_UPDATED");
     }
 
     private int calculateDurationHours(List<String> services) {
@@ -155,13 +209,24 @@ public class BookingServiceImpl implements BookingService {
         return services.size();
     }
 
-    private int getDurationInHours(BookingRequestDto bookingRequestDto) {
-        // Если пришло 0 или null, считаем как 1 час
-        if (bookingRequestDto.getDurationMinutes() == null || bookingRequestDto.getDurationMinutes() <= 0) {
-            return 1;
-        }
-        // Округляем вверх (например, 90 мин = 2 часа, 120 мин = 2 часа)
-        return (int) Math.ceil(bookingRequestDto.getDurationMinutes() / 60.0);
-    }
+    // ✅ Метод отправки уведомления
+    private void sendNotification(String clientPhone, String title, String body, String type) {
+        try {
+            NotificationRequestDto dto = new NotificationRequestDto();
+            dto.setTitle(title);
+            dto.setBody(body);
+            dto.setType(type);
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-User-Name", clientPhone);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<NotificationRequestDto> request = new HttpEntity<>(dto, headers);
+            restTemplate.postForEntity(NOTIFICATION_URL, request, Void.class);
+
+            log.info("Notification sent to {}: {}", clientPhone, title);
+        } catch (Exception e) {
+            log.error("Failed to send notification to {}: {}", clientPhone, e.getMessage());
+        }
+    }
 }
