@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
 
         sendNotification(username,
                 "Запись создана",
-                "Ваша запись на " + bookingRequestDto.getBookingDate() + " в " + bookingRequestDto.getBookingTime() + " успешно создана.",
+                "Ваша запись на " + bookingRequestDto.getBookingDate() + " в " + bookingRequestDto.getBookingTime(),
                 "BOOKING_CREATED");
 
         // Уведомление мастеру
