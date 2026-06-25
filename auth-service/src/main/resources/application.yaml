@@ -22,6 +22,20 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: dzmitry.zavadski.2905@gmail.com
+    password: uwqh wgjd mfaj sdoi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
 # Кастомные настройки для нашей безопасности
 jwt:
   secret: 9a4f94d8170b1343feaa84181286e1112233445566778899aabbccddeeff0011 # Сильная секретная строка в hex

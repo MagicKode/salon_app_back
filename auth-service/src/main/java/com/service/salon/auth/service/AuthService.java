@@ -10,5 +10,8 @@ public interface AuthService {
     AuthResponse register(RegisterRequest request);
     AuthResponse login(LoginRequest request);
     UserEntity getUserByPhone(String phoneNumber);
+
     void updateProfile(String phoneNumber, UpdateProfileRequest request);
+    void sendResetCode(String email);
+    void resetPassword(String email, String code, String newPassword);
 }

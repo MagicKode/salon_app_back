@@ -3,6 +3,8 @@ package com.service.salon.auth.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -31,4 +33,10 @@ public class UserEntity {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "reset_code")
+    private String resetCode;
+
+    @Column(name = "reset_code_expiry")
+    private LocalDateTime resetCodeExpiry;
 }

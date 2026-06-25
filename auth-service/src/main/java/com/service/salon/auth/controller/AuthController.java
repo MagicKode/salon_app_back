@@ -1,10 +1,7 @@
 package com.service.salon.auth.controller;
 
 import com.service.salon.auth.model.UserEntity;
-import com.service.salon.auth.model.dto.AuthResponse;
-import com.service.salon.auth.model.dto.LoginRequest;
-import com.service.salon.auth.model.dto.RegisterRequest;
-import com.service.salon.auth.model.dto.UpdateProfileRequest;
+import com.service.salon.auth.model.dto.*;
 import com.service.salon.auth.service.AuthService;
 import com.service.salon.auth.util.JwtUtil;
 import com.service.salon.commonservice.dto.ApiResponse;
@@ -57,6 +54,18 @@ public class AuthController {
 
         String phoneNumber = jwtUtil.extractPhoneNumber(token.replace("Bearer ", ""));
         authService.updateProfile(phoneNumber, request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.sendResetCode(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

@@ -15,9 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 @Slf4j
@@ -27,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final JavaMailSender mailSender;
 
     @Override
     @Transactional
@@ -98,5 +104,52 @@ public class AuthServiceImpl implements AuthService {
         user.setFirstName(request.getFirstName());
         user.setEmail(request.getEmail());
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void sendResetCode(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Пользователь с таким email не найден", HttpStatus.NOT_FOUND));
+
+        String code = String.format("%06d", new Random().nextInt(999999));
+        user.setResetCode(code);
+        user.setResetCodeExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Код для сброса пароля");
+        message.setText("Ваш код подтверждения: " + code + "\nДействителен 15 минут.");
+        log.info("Generated reset code for {}: {}", email, code);
+
+        mailSender.send(message);
+
+        log.info("Reset code sent to {}", email);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String email, String code, String newPassword) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("Пользователь не найден", HttpStatus.NOT_FOUND));
+
+        log.info("Comparing codes: stored='{}' (length={}), received='{}' (length={})",
+                user.getResetCode(), user.getResetCode() == null ? 0 : user.getResetCode().length(),
+                code, code.length());
+
+        if (user.getResetCode() == null || !user.getResetCode().trim().equals(code.trim())) {
+            throw new BusinessException("Неверный код", HttpStatus.BAD_REQUEST);
+        }
+        if (user.getResetCodeExpiry() == null || user.getResetCodeExpiry().isBefore(LocalDateTime.now())) {
+            throw new BusinessException("Срок действия кода истёк", HttpStatus.BAD_REQUEST);
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetCode(null);
+        user.setResetCodeExpiry(null);
+        userRepository.save(user);
+
+        log.info("Stored reset code: '{}', received code: '{}'", user.getResetCode(), code);
     }
 }
