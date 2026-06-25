@@ -46,15 +46,15 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
+    // ✅ Добавлен метод для удобства (subject = phoneNumber)
+    public String extractPhoneNumber(String token) {
+        return extractUsername(token);
+    }
+
     // Извлекаем любой кастомный Claim
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
-    }
-
-    // Проверяем, не истек ли токен
-    public boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
     private Claims extractAllClaims(String token) {

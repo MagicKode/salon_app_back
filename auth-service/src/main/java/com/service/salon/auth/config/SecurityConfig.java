@@ -10,6 +10,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // Хэширует пароли с солью
+        return new BCryptPasswordEncoder();
     }
 }

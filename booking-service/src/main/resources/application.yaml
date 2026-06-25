@@ -20,6 +20,25 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+      timeout: 2000ms
+      connect-timeout: 2000ms
+
+  cache:
+    type: redis
+    redis:
+      cache-null-values: false
+      use-key-prefix: true
+      key-prefix: "salon::"
+
 jwt:
   secret: 9a4f94d8170b1343feaa84181286e1112233445566778899aabbccddeeff0011
   expiration: 86400000

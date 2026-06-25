@@ -2,9 +2,7 @@ package com.service.salon.reviewservice.model.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 public class ReviewStatsDto {
     private Double averageRating;

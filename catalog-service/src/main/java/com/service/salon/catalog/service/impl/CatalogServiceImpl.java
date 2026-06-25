@@ -6,13 +6,12 @@ import com.service.salon.catalog.model.SalonEntity;
 import com.service.salon.catalog.repository.SalonRepository;
 import com.service.salon.catalog.service.CatalogService;
 import com.service.salon.commonservice.exception.ResourceNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.module.ResolutionException;
 
 @Service
 @Slf4j
@@ -23,6 +22,7 @@ public class CatalogServiceImpl implements CatalogService {
     private final SalonMapper salonMapper;
 
     @Override
+    @Cacheable(value = "salon", key = "'single'")
     @Transactional(readOnly = true)
     public Salon getMainSalon() {
         log.info("Fetching main salon details from database...");
@@ -38,6 +38,8 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    @CacheEvict(value = "salon", key = "'single'")
+    @Transactional
     public Salon updateMainSalon(Salon salonDomain) {
         log.info("Обновление данных главного салона в базе данных для ID: 1");
 

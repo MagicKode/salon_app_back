@@ -5,12 +5,15 @@ import com.service.salon.auth.model.UserEntity;
 import com.service.salon.auth.model.dto.AuthResponse;
 import com.service.salon.auth.model.dto.LoginRequest;
 import com.service.salon.auth.model.dto.RegisterRequest;
+import com.service.salon.auth.model.dto.UpdateProfileRequest;
 import com.service.salon.auth.repository.UserRepository;
 import com.service.salon.auth.service.AuthService;
 import com.service.salon.auth.util.JwtUtil;
 import com.service.salon.commonservice.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,12 +59,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Cacheable(value = "userProfile", key = "#phoneNumber")
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         log.info("Попытка входа пользователя по номеру телефона: {}", request.getPhoneNumber());
 
-        UserEntity user = userRepository.findByPhoneNumber(request.getPhoneNumber())
-                .orElseThrow(() -> new BusinessException("Неверный номер телефона или пароль", HttpStatus.UNAUTHORIZED));
+        UserEntity user = getUserByPhone(request.getPhoneNumber());
 
         // Проверяем хэши паролей
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -77,5 +80,23 @@ public class AuthServiceImpl implements AuthService {
                 user.getPhoneNumber(),
                 user.getEmail() != null ? user.getEmail() : "Email не указан"
         );
+    }
+
+    @Cacheable(value = "userProfile", key = "#phoneNumber")
+    @Transactional(readOnly = true)
+    public UserEntity getUserByPhone(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new BusinessException("Неверный номер телефона или пароль", HttpStatus.UNAUTHORIZED));
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "userProfile", key = "#phoneNumber")
+    public void updateProfile(String phoneNumber, UpdateProfileRequest request) {
+        UserEntity user = userRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new BusinessException("Пользователь не найден", HttpStatus.NOT_FOUND));
+        user.setFirstName(request.getFirstName());
+        user.setEmail(request.getEmail());
+        userRepository.save(user);
     }
 }

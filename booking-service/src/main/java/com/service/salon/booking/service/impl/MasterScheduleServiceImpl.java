@@ -6,6 +6,7 @@ import com.service.salon.booking.model.dto.DayStatDto;
 import com.service.salon.booking.repository.BookingRepository;
 import com.service.salon.booking.service.MasterScheduleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ public class MasterScheduleServiceImpl implements MasterScheduleService {
     private  final BookingRepository bookingRepository;
 
     @Override
+    @Cacheable(value = "masterSchedule", key = "#masterName + '_today'")
     public DailyScheduleDto getTodaySchedule(String masterName) {
         LocalDate today = LocalDate.now();
 
@@ -63,11 +65,13 @@ public class MasterScheduleServiceImpl implements MasterScheduleService {
     }
 
     @Override
+    @Cacheable(value = "monthStats", key = "#masterName + '_' + #year + '_' + #month")
     public List<DayStatDto> getMonthlyStats(String masterName, int month, int year) {
         return bookingRepository.getMonthlyStats(masterName, month, year);
     }
 
     @Override
+    @Cacheable(value = "monthAppointments", key = "#masterName + '_' + #year + '_' + #month")
     public List<Booking> getMonthAppointments(String masterName, int month, int year) {
         return bookingRepository.getMonthAppointments(masterName, month, year);
     }

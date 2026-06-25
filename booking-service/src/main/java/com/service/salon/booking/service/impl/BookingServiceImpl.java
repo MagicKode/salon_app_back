@@ -10,6 +10,8 @@ import com.service.salon.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,6 +39,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     @Override
+    @CacheEvict(value = {"slots", "masterSchedule", "monthStats", "monthAppointments"}, allEntries = true)
     public Booking createBooking(BookingRequestDto bookingRequestDto, String username) {
         bookingRequestDto.setClientName(username);
         bookingRequestDto.setMasterName("Pavel");
@@ -106,6 +109,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Cacheable(value = "slots", key = "#masterName + '_' + #date.toString() + '_' + #status")
     public List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date, BookingStatus status) {
         // 1. Получаем активные брони мастера
         List<Booking> activeBookings = bookingRepository.
@@ -137,6 +141,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @CacheEvict(value = {"slots", "masterSchedule", "monthStats", "monthAppointments"}, allEntries = true)
     @Transactional
     public void cancelBooking(Long bookingId, String username) {
         // 1. Ищем бронь в базе

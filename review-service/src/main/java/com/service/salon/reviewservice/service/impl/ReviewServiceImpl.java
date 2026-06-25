@@ -9,6 +9,8 @@ import com.service.salon.reviewservice.model.dto.ReviewStatsDto;
 import com.service.salon.reviewservice.repository.ReviewRepository;
 import com.service.salon.reviewservice.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
+    @CacheEvict(value = "reviews", key = "#reviewCreateDto.masterId + '_stats'")
     public ReviewResponseDto save(ReviewCreateDto reviewCreateDto) {
         Review review = reviewMapper.toEntity(reviewCreateDto);
         Review savedReview = reviewRepository.save(review);
@@ -33,6 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Cacheable(value = "reviews", key = "#masterId + '_stats'")
     public ReviewStatsDto getMasterStats(Long masterId) {
         return reviewRepository.getMasterStats(masterId);
     }
