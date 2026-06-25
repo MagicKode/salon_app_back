@@ -148,7 +148,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetCode(null);
         user.setResetCodeExpiry(null);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
 
         log.info("Stored reset code: '{}', received code: '{}'", user.getResetCode(), code);
     }
