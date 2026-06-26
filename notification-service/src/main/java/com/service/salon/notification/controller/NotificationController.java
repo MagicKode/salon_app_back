@@ -1,8 +1,10 @@
 package com.service.salon.notification.controller;
 
+import com.service.salon.commonservice.dto.ApiResponse;
 import com.service.salon.notification.model.Notification;
 import com.service.salon.notification.model.dto.NotificationRequestDto;
 import com.service.salon.notification.service.NotificationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,5 +54,14 @@ public class NotificationController {
         }
         notificationService.saveFcmToken(clientPhone, token);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/broadcast")
+    public ResponseEntity<ApiResponse<Integer>> broadcastToClients(
+            @RequestHeader("X-User-Name") String masterPhone,
+            @Valid @RequestBody NotificationRequestDto dto) {
+
+        int count = notificationService.broadcastToAllClients(masterPhone, dto);
+        return ResponseEntity.ok(ApiResponse.success(count));
     }
 }

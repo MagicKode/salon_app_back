@@ -2,6 +2,7 @@ package com.service.salon.notification.service;
 
 import com.service.salon.notification.model.Notification;
 import com.service.salon.notification.model.dto.NotificationRequestDto;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface NotificationService {
     int getUnreadCount(String clientPhone);
 
     void saveFcmToken(String clientPhone, String fcmToken);
+
+    int broadcastToAllClients(String masterPhone, NotificationRequestDto dto);
 }
