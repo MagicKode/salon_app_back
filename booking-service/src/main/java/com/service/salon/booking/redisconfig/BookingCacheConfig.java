@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCust
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -49,20 +50,29 @@ public class BookingCacheConfig {
                                         .fromSerializer(new StringRedisSerializer()))
                                 .serializeValuesWith(RedisSerializationContext.SerializationPair
                                         .fromSerializer(slotsSerializer)))
+
                 .withCacheConfiguration("masterSchedule",
                         RedisCacheConfiguration.defaultCacheConfig()
                                 .entryTtl(Duration.ofMinutes(2))
-                                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(dailyScheduleSerializer)))
+                                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                                        .fromSerializer(new StringRedisSerializer()))
+                                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                                        .fromSerializer(dailyScheduleSerializer)))
+
                 .withCacheConfiguration("monthStats",
                         RedisCacheConfiguration.defaultCacheConfig()
                                 .entryTtl(Duration.ofMinutes(5))
-                                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(statsSerializer)))
+                                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                                        .fromSerializer(new StringRedisSerializer()))
+                                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                                        .fromSerializer(statsSerializer)))
+
                 .withCacheConfiguration("monthAppointments",
                         RedisCacheConfiguration.defaultCacheConfig()
                                 .entryTtl(Duration.ofMinutes(5))
-                                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(appointmentsSerializer)));
+                                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                                        .fromSerializer(new StringRedisSerializer()))
+                                .serializeValuesWith(RedisSerializationContext.SerializationPair
+                                        .fromSerializer(appointmentsSerializer)));
     }
 }
