@@ -22,7 +22,7 @@ public class CatalogServiceImpl implements CatalogService {
     private final SalonMapper salonMapper;
 
     @Override
-    @Cacheable(value = "salon", key = "'single'")
+//    @Cacheable(value = "salon", key = "'single'")
     @Transactional(readOnly = true)
     public Salon getMainSalon() {
         log.info("Fetching main salon details from database...");

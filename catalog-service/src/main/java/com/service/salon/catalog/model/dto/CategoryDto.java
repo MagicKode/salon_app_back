@@ -2,8 +2,7 @@ package com.service.salon.catalog.model.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

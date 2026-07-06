@@ -4,6 +4,8 @@ import com.service.salon.catalog.model.dto.ImageDto;
 import com.service.salon.catalog.service.ImageCacheService;
 import com.service.salon.catalog.service.ImageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/catalog/images")
 @RequiredArgsConstructor
@@ -24,12 +27,13 @@ public class ImageController {
     private final ImageCacheService imageCacheService;
     private final ImageService imageService;
 
+    @CacheEvict(value = "images", key = "'gallery_0'")
     @PostMapping("/upload")
     public ResponseEntity<ImageDto> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam("relatedType") String relatedType,
             @RequestParam(value = "relatedId", required = false) Long relatedId) throws IOException {
-
+        log.info("📥 Получен запрос на загрузку файла: {}, тип: {}", file.getOriginalFilename(), relatedType);
         return ResponseEntity.ok(imageService.uploadImage(file, relatedType, relatedId));
     }
 
