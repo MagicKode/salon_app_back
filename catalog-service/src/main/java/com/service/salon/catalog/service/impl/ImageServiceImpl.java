@@ -58,4 +58,12 @@ public class ImageServiceImpl implements ImageService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         return entity.getContentType();
     }
+
+    @Override
+    @Transactional
+    public void deleteImage(Long id) {
+        ImageEntity entity = imageRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found"));
+        imageRepository.delete(entity);
+    }
 }

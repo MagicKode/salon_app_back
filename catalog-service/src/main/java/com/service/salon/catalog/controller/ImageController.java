@@ -33,7 +33,6 @@ public class ImageController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("relatedType") String relatedType,
             @RequestParam(value = "relatedId", required = false) Long relatedId) throws IOException {
-        log.info("📥 Получен запрос на загрузку файла: {}, тип: {}", file.getOriginalFilename(), relatedType);
         return ResponseEntity.ok(imageService.uploadImage(file, relatedType, relatedId));
     }
 
@@ -55,5 +54,13 @@ public class ImageController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(contentType));
         return new ResponseEntity<>(data, headers, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    @CacheEvict(value = "images", allEntries = true)
+    @Transactional
+    public ResponseEntity<Void> deleteImage(@PathVariable Long id) {
+        imageService.deleteImage(id);
+        return ResponseEntity.noContent().build();
     }
 }

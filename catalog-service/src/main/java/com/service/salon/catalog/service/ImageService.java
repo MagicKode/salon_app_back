@@ -9,4 +9,5 @@ public interface ImageService {
     ImageDto uploadImage(MultipartFile file, String relatedType, Long relatedId) throws IOException;
     byte[] getImageData(Long id);
     String getContentType(Long id);
+    void deleteImage(Long id);
 }
