@@ -22,12 +22,17 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public ImageDto uploadImage(MultipartFile file, String relatedType, Long relatedId) throws IOException {
+
+        String cleanName = file.getOriginalFilename()
+                .replaceAll(" ", "_")
+                .replaceAll("[^a-zA-Z0-9._-]", "");
+
         ImageEntity entity = ImageEntity.builder()
                 .relatedType(relatedType)
                 .relatedId(relatedId)
                 .imageData(file.getBytes())
                 .contentType(file.getContentType())
-                .originalName(file.getOriginalFilename())
+                .originalName(cleanName)
                 .build();
 
         entity = imageRepository.save(entity);

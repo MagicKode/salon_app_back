@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -40,10 +41,15 @@ public class ImageController {
     @GetMapping("/by-related")
     public ResponseEntity<List<ImageDto>> getByRelatedType(
             @RequestParam("relatedType") String relatedType,
-            @RequestParam("relatedId") Long relatedId) {
+            @RequestParam("relatedId") Long relatedId,
+            @RequestParam(required = false, defaultValue = "999") int limit) {
 
         final Long effectiveId = (relatedId == null) ? 0L : relatedId;
-        return ResponseEntity.ok(imageCacheService.getImagesByRelated(relatedType, effectiveId));
+        List<ImageDto> allImages = imageCacheService.getImagesByRelated(relatedType, effectiveId);
+        // Обрезаем до limit
+        List<ImageDto> limitedImages = allImages.stream().limit(limit).toList();
+
+        return ResponseEntity.ok(limitedImages);
     }
 
     @GetMapping("/{id}")

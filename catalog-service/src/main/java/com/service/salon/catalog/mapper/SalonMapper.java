@@ -15,4 +15,6 @@ public interface SalonMapper {
     SalonEntity toEntity(Salon domain);
 
     Salon toDomainFromDto(SalonDto dto);
+
+
 }

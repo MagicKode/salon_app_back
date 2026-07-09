@@ -6,9 +6,12 @@ import com.service.salon.catalog.model.dto.ServiceDto;
 import com.service.salon.catalog.repository.ImageRepository;
 import com.service.salon.catalog.repository.ServiceRepository;
 import com.service.salon.catalog.service.ServiceCacheService;
+import com.service.salon.commonservice.exception.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +34,17 @@ public class ServiceCacheServiceImpl implements ServiceCacheService {
     public List<ServiceDto> getServicesByCategory(Long categoryId) {
         return serviceRepository.findByCategoryIdAndActiveTrueOrderBySortOrderAsc(categoryId)
                 .stream().map(this::toDto).toList();
+    }
+
+    @Override
+    @Transactional
+    public ServiceEntity updateDescription(Long id, String newDescription) {
+        ServiceEntity entity = serviceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Услуга не найдена"));
+
+        entity.setDescription(newDescription);
+
+        return serviceRepository.save(entity);
     }
 
     private ServiceDto toDto(ServiceEntity entity) {
