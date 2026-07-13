@@ -31,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
 
     private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
     private static final String NOTIFICATION_URL = "http://localhost:8085/api/v1/notifications/send";
+    private static final String AUTH_SERVICE_URL = "http://localhost:8082/api/v1/users/name/";
 
     private final List<String> WORK_SLOTS = List.of(
             "09:00", "10:00", "11:00", "12:00", "13:00", "14:00",
@@ -41,7 +42,22 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @CacheEvict(value = {"slots", "masterSchedule", "monthStats", "monthAppointments"}, allEntries = true)
     public Booking createBooking(BookingRequestDto bookingRequestDto, String username) {
-        bookingRequestDto.setClientName(username);
+        // username = номер телефона клиента
+        String clientPhone = username;
+
+        // ✅ Получаем имя клиента из БД
+        String clientName;
+        try {
+            clientName = restTemplate.getForObject(AUTH_SERVICE_URL + clientPhone, String.class);
+            if (clientName == null || clientName.isEmpty()) {
+                clientName = "Клиент";
+            }
+        } catch (Exception e) {
+            log.warn("Не удалось получить имя клиента: {}", e.getMessage());
+            clientName = "Клиент";
+        }
+
+        bookingRequestDto.setClientName(clientName);
         bookingRequestDto.setMasterName("Pavel");
 
         // 1. Вычисляем, сколько часов (слотов) займет сеанс по количеству услуг
@@ -76,6 +92,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = new Booking();
         booking.setClientName(bookingRequestDto.getClientName());
         booking.setMasterName(bookingRequestDto.getMasterName());
+        booking.setClientPhone(bookingRequestDto.getClientPhone());
         booking.setBookingDate(bookingRequestDto.getBookingDate());
         booking.setBookingTime(bookingRequestDto.getBookingTime());
         booking.setServiceNames(bookingRequestDto.getServiceNames());
@@ -84,15 +101,23 @@ public class BookingServiceImpl implements BookingService {
         booking.setDurationMinutes(bookingRequestDto.getDurationMinutes());
         booking.setStatus(BookingStatus.CONFIRMED);
 
+        // ✅ Уведомление клиенту (краткое)
         sendNotification(username,
                 "Запись создана",
                 "Ваша запись на " + bookingRequestDto.getBookingDate() + " в " + bookingRequestDto.getBookingTime(),
                 "BOOKING_CREATED");
 
         // Уведомление мастеру
+        String masterMessage = String.format("Клиент %s (%s) записался на %s в %s",
+                clientName,
+                clientPhone,
+                bookingRequestDto.getBookingDate(),
+                bookingRequestDto.getBookingTime()
+        );
+
         sendNotification("+375291234567",
                 "Новая запись",
-                "Клиент " + username + " записался на " + bookingRequestDto.getBookingDate() + " в " + bookingRequestDto.getBookingTime(),
+                masterMessage,
                 "BOOKING_CREATED");
 
         return bookingRepository.save(booking);

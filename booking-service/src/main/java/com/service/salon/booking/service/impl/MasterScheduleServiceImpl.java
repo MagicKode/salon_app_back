@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MasterScheduleServiceImpl implements MasterScheduleService {
 
-    private  final BookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     @Cacheable(value = "masterSchedule", key = "#masterName + '_today'")
@@ -61,7 +61,11 @@ public class MasterScheduleServiceImpl implements MasterScheduleService {
                 .lastClientTime(lastTime)
                 .totalBusyMinutes(totalMinutes)
                 .build();
+    }
 
+    @Override
+    public DailyScheduleDto getDaySchedule(String masterName, LocalDate date) {
+        return buildSchedule(masterName, date);
     }
 
     @Override
@@ -74,5 +78,41 @@ public class MasterScheduleServiceImpl implements MasterScheduleService {
     @Cacheable(value = "monthAppointments", key = "#masterName + '_' + #year + '_' + #month")
     public List<Booking> getMonthAppointments(String masterName, int month, int year) {
         return bookingRepository.getMonthAppointments(masterName, month, year);
+    }
+
+    private DailyScheduleDto buildSchedule(String masterName, LocalDate date) {
+        List<Booking> bookings = bookingRepository.findByMasterNameAndBookingDateOrderByBookingTimeAsc(masterName, date);
+
+        if (bookings.isEmpty()) {
+            return DailyScheduleDto.builder()
+                    .bookings(Collections.emptyList())
+                    .firstClientTime("-")
+                    .lastClientTime("-")
+                    .totalBusyMinutes(0)
+                    .build();
+        }
+
+        // Первое время
+        String firstTime = bookings.get(0).getBookingTime() != null
+                ? bookings.get(0).getBookingTime().toString()
+                : "-";
+
+        // Последнее время окончания
+        Booking last = bookings.get(bookings.size() - 1);
+        String lastTime = "-";
+        if (last.getBookingTime() != null && last.getDurationMinutes() != null) {
+            lastTime = last.getBookingTime().plusMinutes(last.getDurationMinutes()).toString();
+        }
+
+        int totalMinutes = bookings.stream()
+                .mapToInt(b -> b.getDurationMinutes() != null ? b.getDurationMinutes() : 0)
+                .sum();
+
+        return DailyScheduleDto.builder()
+                .bookings(bookings)
+                .firstClientTime(firstTime)
+                .lastClientTime(lastTime)
+                .totalBusyMinutes(totalMinutes)
+                .build();
     }
 }

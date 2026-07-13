@@ -7,7 +7,6 @@ import com.service.salon.booking.model.dto.CommentRequestDto;
 import com.service.salon.booking.model.dto.TimeSlotDto;
 import com.service.salon.booking.service.BookingService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -97,5 +96,23 @@ public class BookingController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при обновлении комментария");
         }
+    }
+
+    @GetMapping("/master/{masterName}/date/{date}")
+    public ResponseEntity<List<Booking>> getBookingsByMasterAndDate(
+            @PathVariable String masterName,
+            @PathVariable String date,
+            @RequestParam(defaultValue = "CONFIRMED") String status) {
+        BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
+        return ResponseEntity.ok(bookingService.getBookingsByMasterAndDate(masterName, LocalDate.parse(date), bookingStatus));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Booking>> getBookings(
+            @RequestParam String masterName,
+            @RequestParam String date,
+            @RequestParam(defaultValue = "CONFIRMED") String status) {
+        BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
+        return ResponseEntity.ok(bookingService.getBookingsByMasterAndDate(masterName, LocalDate.parse(date), bookingStatus));
     }
 }

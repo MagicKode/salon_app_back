@@ -42,6 +42,9 @@ public class Booking {
     @Column(name = "booking_date", nullable = false)
     private LocalDate bookingDate; // Например, 2026-05-31
 
+    @Column(name = "client_phone")
+    private String clientPhone;
+
     @Column(name = "booking_time", nullable = false)
     private LocalTime bookingTime; // Например, 13:00:00
 

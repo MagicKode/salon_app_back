@@ -10,6 +10,7 @@ import java.util.List;
 public class BookingRequestDto {
     private String clientName;
     private String masterName;
+    private String clientPhone;
     private LocalDate bookingDate;
     private LocalTime bookingTime;
     private List<String> serviceNames;

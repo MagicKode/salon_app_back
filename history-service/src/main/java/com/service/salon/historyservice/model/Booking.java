@@ -49,6 +49,9 @@ public class Booking {
     @Column(name = "service_name")
     private List<String> serviceNames;
 
+    @Column(name = "client_phone")
+    private String clientPhone;
+
     @Column(name = "total_price")
     private BigDecimal totalPrice;
 

@@ -19,7 +19,6 @@ public class FcmServiceImpl implements FcmService {
                         .setTitle(title)
                         .setBody(body)
                         .build())
-//                .putData("click_action", "FLUTTER_NOTIFICATION_CLICK")
                 .build();
 
         try {
