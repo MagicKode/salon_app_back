@@ -106,4 +106,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         return clientPhones.size();
     }
+
+    @Override
+    public void deleteNotification(Long id) {
+        notificationRepository.deleteById(id);
+    }
 }

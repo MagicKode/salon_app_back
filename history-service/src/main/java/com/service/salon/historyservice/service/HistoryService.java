@@ -5,5 +5,7 @@ import com.service.salon.historyservice.model.Booking;
 import java.util.List;
 
 public interface HistoryService {
-    List<Booking> getClientHistory(String token, String userPhone);
+    List<Booking> getActiveHistory(String token, String userPhone);
+
+    List<Booking> getPastHistory(String token, String userPhone);
 }

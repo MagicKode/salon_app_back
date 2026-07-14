@@ -15,4 +15,6 @@ public interface NotificationService {
     void saveFcmToken(String clientPhone, String fcmToken);
 
     int broadcastToAllClients(String masterPhone, NotificationRequestDto dto);
+
+    void deleteNotification(Long id);
 }

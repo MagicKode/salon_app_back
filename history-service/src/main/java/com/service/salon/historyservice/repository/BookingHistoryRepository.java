@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface BookingHistoryRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByClientNameOrderByBookingDateDescBookingTimeDesc(String clientName);
+    List<Booking> findByClientPhoneOrderByBookingDateDescBookingTimeDesc(String clientPhone);
 }

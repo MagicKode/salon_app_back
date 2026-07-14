@@ -61,11 +61,9 @@ public class BookingServiceImpl implements BookingService {
         bookingRequestDto.setMasterName("Pavel");
 
         // 1. Вычисляем, сколько часов (слотов) займет сеанс по количеству услуг
-        int durationHours = calculateDurationHours(bookingRequestDto.getServiceNames());
-        bookingRequestDto.setDurationMinutes(durationHours * 60);
-
+        int durationMinutes = bookingRequestDto.getDurationMinutes();
         LocalTime startTime = bookingRequestDto.getBookingTime();
-        LocalTime endTime = startTime.plusHours(durationHours);
+        LocalTime endTime = startTime.plusMinutes(durationMinutes);
 
         // 2. Ищем все брони мастера на эту дату
         List<Booking> existingBookings = bookingRepository.findByMasterNameAndBookingDateAndStatus(
@@ -81,7 +79,7 @@ public class BookingServiceImpl implements BookingService {
                     LocalTime existStart = b.getBookingTime();
                     int existDuration = b.getDurationMinutes() != null ?
                             (int) Math.ceil(b.getDurationMinutes() / 60.0) : 1;
-                    LocalTime existEnd = existStart.plusHours(existDuration);
+                    LocalTime existEnd = existStart.plusMinutes(existDuration);
                     return startTime.isBefore(existEnd) && endTime.isAfter(existStart);
                 });
 
@@ -92,13 +90,13 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = new Booking();
         booking.setClientName(bookingRequestDto.getClientName());
         booking.setMasterName(bookingRequestDto.getMasterName());
-        booking.setClientPhone(bookingRequestDto.getClientPhone());
+        booking.setClientPhone(clientPhone);
         booking.setBookingDate(bookingRequestDto.getBookingDate());
         booking.setBookingTime(bookingRequestDto.getBookingTime());
         booking.setServiceNames(bookingRequestDto.getServiceNames());
         booking.setTotalPrice(bookingRequestDto.getTotalPrice());
         booking.setNotes(bookingRequestDto.getNotes());
-        booking.setDurationMinutes(bookingRequestDto.getDurationMinutes());
+        booking.setDurationMinutes(durationMinutes);
         booking.setStatus(BookingStatus.CONFIRMED);
 
         // ✅ Уведомление клиенту (краткое)
@@ -123,10 +121,6 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.save(booking);
     }
 
-    @Override
-    public List<Booking> getClientHistory(String username) {
-        return bookingRepository.findByClientNameOrderByBookingDateDescBookingTimeDesc(username);
-    }
 
     @Override
     public List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate, BookingStatus status) {
@@ -174,7 +168,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Бронирование не найдено"));
 
         // ✅ Разрешаем отмену клиенту ИЛИ мастеру
-        boolean isClient = booking.getClientName().equalsIgnoreCase(username);
+        boolean isClient = booking.getClientPhone().equalsIgnoreCase(username);
         boolean isMaster = booking.getMasterName().equalsIgnoreCase(username);
 
         // 2. Безопасность: проверяем, что эту бронь отменяет именно тот клиент, который её создал
@@ -217,7 +211,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new IllegalArgumentException("Бронирование не найдено"));
 
         // 2. Безопасность: проверят только автор брони
-        if (!booking.getClientName().equalsIgnoreCase(username)) {
+        if (!booking.getClientPhone().equalsIgnoreCase(username)) {
             throw new IllegalStateException("Вы не можете изменять комментарий к чужому бронированию!");
         }
 
@@ -230,13 +224,6 @@ public class BookingServiceImpl implements BookingService {
                 "Запись изменена",
                 "Комментарий к записи #" + bookingId + " был обновлен.",
                 "BOOKING_UPDATED");
-    }
-
-    private int calculateDurationHours(List<String> services) {
-        if (services == null || services.isEmpty()) {
-            return 1;
-        }
-        return services.size();
     }
 
     // ✅ Метод отправки уведомления

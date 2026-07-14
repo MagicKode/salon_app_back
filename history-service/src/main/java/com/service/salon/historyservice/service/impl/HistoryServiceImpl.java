@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,13 +25,33 @@ public class HistoryServiceImpl implements HistoryService {
     private String jwtSecret;
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Booking> getClientHistory(String token, String userPhone) {
-
-        // 1. Проверяем токен
+    public List<Booking> getActiveHistory(String token, String userPhone) {
         validateJwtToken(token);
+        List<Booking> all = bookingHistoryRepository
+                .findByClientPhoneOrderByBookingDateDescBookingTimeDesc(userPhone);
+        LocalDateTime now = LocalDateTime.now();
+        return all.stream()
+                .filter(b -> {
+                    LocalDateTime endTime = b.getBookingDate().atTime(b.getBookingTime())
+                            .plusMinutes(b.getDurationMinutes() != null ? b.getDurationMinutes() : 60);
+                    return endTime.isAfter(now);
+                })
+                .collect(Collectors.toList());
+    }
 
-        return bookingHistoryRepository.findByClientNameOrderByBookingDateDescBookingTimeDesc(userPhone);
+    @Override
+    public List<Booking> getPastHistory(String token, String userPhone) {
+        validateJwtToken(token);
+        List<Booking> all = bookingHistoryRepository
+                .findByClientPhoneOrderByBookingDateDescBookingTimeDesc(userPhone);
+        LocalDateTime now = LocalDateTime.now();
+        return all.stream()
+                .filter(b -> {
+                    LocalDateTime endTime = b.getBookingDate().atTime(b.getBookingTime())
+                            .plusMinutes(b.getDurationMinutes() != null ? b.getDurationMinutes() : 60);
+                    return endTime.isBefore(now);
+                })
+                .collect(Collectors.toList());
     }
 
     private void validateJwtToken(String token) {

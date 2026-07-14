@@ -64,4 +64,10 @@ public class NotificationController {
         int count = notificationService.broadcastToAllClients(masterPhone, dto);
         return ResponseEntity.ok(ApiResponse.success(count));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.noContent().build();
+    }
 }

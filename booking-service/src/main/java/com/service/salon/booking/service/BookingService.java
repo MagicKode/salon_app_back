@@ -13,7 +13,6 @@ public interface BookingService {
     void cancelBooking(Long bookingId, String username);
     void updateBookingComment(Long bookingId, String newComment, String username);
 
-    List<Booking> getClientHistory(String clientName);
     List<Booking> getBookingsByMasterAndDate(String masterName, LocalDate localDate, BookingStatus status);
     List<TimeSlotDto> getAvailableSlots(String masterName, LocalDate date,  BookingStatus status);
     List<LocalDate> getFullyBusyDates(String masterName, int month, int year);

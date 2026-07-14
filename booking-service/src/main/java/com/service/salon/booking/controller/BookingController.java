@@ -36,15 +36,6 @@ public class BookingController {
         }
     }
 
-    // Получить историю записей клиента (для третьей вкладки, image_8ad29d.png)
-    @GetMapping("/history")
-    public ResponseEntity<List<Booking>> getHistory(
-            @RequestHeader(value = "X-User-Name") String username
-    ) {
-        List<Booking> history = bookingService.getClientHistory(username);
-        return ResponseEntity.ok(history);
-    }
-
     @GetMapping("/slots")
     public ResponseEntity<List<TimeSlotDto>> getAvailableSlots(
             @RequestParam String masterName,
