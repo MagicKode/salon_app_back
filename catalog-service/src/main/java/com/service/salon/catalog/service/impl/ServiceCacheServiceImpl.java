@@ -25,14 +25,14 @@ public class ServiceCacheServiceImpl implements ServiceCacheService {
     @Override
     @Cacheable(value = "services", key = "'all_active'")
     public List<ServiceDto> getActiveServices() {
-        return serviceRepository.findByActiveTrueOrderBySortOrderAsc()
+        return serviceRepository.findByIsActiveTrueOrderBySortOrderAsc()
                 .stream().map(this::toDto).toList();
     }
 
     @Override
     @Cacheable(value = "services", key = "'category_' + #categoryId")
     public List<ServiceDto> getServicesByCategory(Long categoryId) {
-        return serviceRepository.findByCategoryIdAndActiveTrueOrderBySortOrderAsc(categoryId)
+        return serviceRepository.findByCategoryIdAndIsActiveTrueOrderBySortOrderAsc(categoryId)
                 .stream().map(this::toDto).toList();
     }
 

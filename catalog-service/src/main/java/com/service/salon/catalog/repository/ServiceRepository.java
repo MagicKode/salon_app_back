@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<ServiceEntity,Long> {
-    List<ServiceEntity> findByActiveTrueOrderBySortOrderAsc();
-    List<ServiceEntity> findByCategoryIdAndActiveTrueOrderBySortOrderAsc(Long categoryId);
+    List<ServiceEntity> findByIsActiveTrueOrderBySortOrderAsc();
+    List<ServiceEntity> findByCategoryIdAndIsActiveTrueOrderBySortOrderAsc(Long categoryId);
 }

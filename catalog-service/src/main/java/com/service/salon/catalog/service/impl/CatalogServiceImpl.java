@@ -2,8 +2,13 @@ package com.service.salon.catalog.service.impl;
 
 import com.service.salon.basedomains.model.Salon;
 import com.service.salon.catalog.mapper.SalonMapper;
+import com.service.salon.catalog.model.CategoryEntity;
 import com.service.salon.catalog.model.SalonEntity;
+import com.service.salon.catalog.model.ServiceEntity;
+import com.service.salon.catalog.model.dto.CreateServiceRequest;
+import com.service.salon.catalog.repository.CategoryRepository;
 import com.service.salon.catalog.repository.SalonRepository;
+import com.service.salon.catalog.repository.ServiceRepository;
 import com.service.salon.catalog.service.CatalogService;
 import com.service.salon.commonservice.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +18,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -20,6 +27,8 @@ public class CatalogServiceImpl implements CatalogService {
 
     private final SalonRepository salonRepository;
     private final SalonMapper salonMapper;
+    private final ServiceRepository serviceRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
 //    @Cacheable(value = "salon", key = "'single'")
@@ -61,5 +70,32 @@ public class CatalogServiceImpl implements CatalogService {
 
         // 4. Маппим обновленную сущность обратно в чистый бизнес-домен
         return salonMapper.toDomain(updateEntity);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "services", allEntries = true)
+    public ServiceEntity createService(CreateServiceRequest request) {
+        log.info("Создание услуги: {}", request.getName());
+
+        // Получаем категорию, если указана
+        CategoryEntity category = null;
+        if (request.getCategoryId() != null) {
+            category = categoryRepository.findById(Long.valueOf(request.getCategoryId()))
+                    .orElseThrow(() -> new ResourceNotFoundException("Категория не найдена: " + request.getCategoryId()));
+        }
+
+        ServiceEntity entity = ServiceEntity.builder()
+                .name(request.getName())
+                .description(request.getDescription() != null ? request.getDescription() : "")
+                .price(BigDecimal.valueOf(request.getPrice()))
+                .durationMinutes(request.getDurationMinutes())
+                .imageId(request.getImageId())
+                .category(category)
+                .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
+                .isActive(true)
+                .build();
+
+        return serviceRepository.save(entity);
     }
 }

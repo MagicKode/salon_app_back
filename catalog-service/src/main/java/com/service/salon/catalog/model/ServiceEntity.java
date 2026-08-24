@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
 @Table(name = "services")
@@ -33,11 +34,21 @@ public class ServiceEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private CategoryEntity  category;
+    private CategoryEntity category;
 
-    @Column(name = "active")
-    private Boolean active = true;
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
     @Column(name = "sort_order")
     private Integer sortOrder;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        if (isActive == null) isActive = true;
+        if (sortOrder == null) sortOrder = 0;
+    }
 }
