@@ -78,4 +78,18 @@ public class ServiceController {
                         .build()
         );
     }
+
+    @PatchMapping("/{id}/deactivate")
+    @CacheEvict(value = "services", allEntries = true)
+    public ResponseEntity<ApiResponse<ServiceDto>> deactivateService(@PathVariable Long id) {
+        ServiceEntity update = cacheService.softDeleteService(id);
+        ServiceDto dto = serviceMapper.toDto(update);
+        return ResponseEntity.ok(
+                ApiResponse.<ServiceDto>builder()
+                        .success(true)
+                        .message("Услуга деактивирована")
+                        .data(dto)
+                        .build()
+        );
+    }
 }

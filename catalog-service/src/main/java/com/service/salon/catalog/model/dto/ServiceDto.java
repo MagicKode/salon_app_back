@@ -17,4 +17,5 @@ public class ServiceDto {
     private Long categoryId;
     private Integer sortOrder;
     private ImageDto image;
+    private Boolean isActive;
 }

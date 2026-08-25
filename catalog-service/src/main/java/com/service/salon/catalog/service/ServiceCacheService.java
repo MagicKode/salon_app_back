@@ -10,4 +10,5 @@ public interface ServiceCacheService {
     List<ServiceDto> getServicesByCategory(Long categoryId);
 
     ServiceEntity updateDescription(Long id, String newDescription);
+    ServiceEntity softDeleteService(Long id);
 }
