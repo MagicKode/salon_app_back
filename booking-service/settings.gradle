@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 rootProject.name = 'salon-app-back'
-include ':booking-domains'
+include 'booking-domains'

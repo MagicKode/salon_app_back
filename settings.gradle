@@ -7,14 +7,15 @@ pluginManagement {
         }
     }
 }
+
 rootProject.name = 'salon-app-back'
 
 include 'base-domains'
+include 'common-service'
 include 'auth-service'
 include 'booking-service'
 include 'catalog-service'
-include 'common-service'
-include 'api-gateway-service'
 include 'history-service'
 include 'review-service'
 include 'notification-service'
+include 'api-gateway-service'

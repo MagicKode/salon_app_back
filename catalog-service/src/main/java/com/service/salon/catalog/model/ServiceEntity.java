@@ -37,6 +37,7 @@ public class ServiceEntity {
     private CategoryEntity category;
 
     @Column(name = "is_active")
+    @Builder.Default
     private Boolean isActive = true;
 
     @Column(name = "sort_order")
