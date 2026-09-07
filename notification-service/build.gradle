@@ -1,0 +1,8 @@
+//plugins {
+//    id 'java'
+//}
+
+dependencies {
+    implementation project(':common-service')
+    implementation 'com.google.firebase:firebase-admin:9.9.0'
+}

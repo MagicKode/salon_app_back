@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+}
+
+bootJar {
+    enabled = false
+}
+jar {
+    enabled = true
+}

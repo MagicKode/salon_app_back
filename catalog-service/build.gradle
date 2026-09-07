@@ -1,0 +1,18 @@
+//plugins {
+//    id 'org.springframework.boot' version '3.4.2'
+//    id 'io.spring.dependency-management'
+//}
+
+dependencies {
+    implementation project(':base-domains') // Подключение доменного модуля
+    implementation project(':common-service') // Подключение общих утилит
+
+//    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+}
+
+bootJar {
+    enabled = true
+}
+jar {
+    enabled = false
+}
