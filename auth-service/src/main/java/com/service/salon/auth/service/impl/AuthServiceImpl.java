@@ -65,12 +65,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Cacheable(value = "userProfile", key = "#phoneNumber")
+//    @Cacheable(value = "userProfile", key = "#phoneNumber")
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         log.info("Попытка входа пользователя по номеру телефона: {}", request.getPhoneNumber());
+        log.info("Пароль из запроса: {}", request.getPassword());
 
         UserEntity user = getUserByPhone(request.getPhoneNumber());
+        log.info("Пользователь найден: {}, пароль в базе: {}", user.getPhoneNumber(), user.getPassword());
+
+        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        log.info("Пароли совпадают: {}", matches);
 
         // Проверяем хэши паролей
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -87,6 +92,12 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail() != null ? user.getEmail() : "Email не указан"
         );
     }
+
+//    @Override
+//    public AuthResponse login(LoginRequest request) {
+//        log.info("Login called");
+//        return new AuthResponse("test-token", "Bearer", "CLIENT", "Test", "+375291234567", "test@mail.com");
+//    }
 
     @Cacheable(value = "userProfile", key = "#phoneNumber")
     @Transactional(readOnly = true)
